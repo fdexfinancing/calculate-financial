@@ -42,10 +42,10 @@ function calculateDREBalance(data = {}, options) {
 }
 
 function calcGrowth(net_income_year_before, net_income) {
-    if(parseFloat(net_income_year_before) == 0) {
+    if(parseFloat(net_income_year_before) == 0 || parseFloat(net_income) == 0) {
         return "";
     }
-
+    
     return ((parseFloat(net_income) - parseFloat(net_income_year_before)) / parseFloat(net_income_year_before)) * 100;
 }
 
@@ -165,7 +165,7 @@ function calculateIndicators(data = {}, options) {
     result.liquid_revenue = calcLiquidRevenue(data.net_income, data.month_quantity);
     result.equity = parseFloat(data.liquid_assets);
     result.ebitda = calcLajida(data._ebitda, data.month_quantity);
-    result.ebitda_by_net_revenue = calcLajidaNetRevenue(result.ebitda, esult.liquid_revenue);
+    result.ebitda_by_net_revenue = calcLajidaNetRevenue(result.ebitda, result.liquid_revenue);
     result.net_earnings = calcNetEarnings(data.liquid_profit, data.month_quantity);
     result.net_earnings_by_net_revenue = calcNetEarningsNetRevenue(result.net_earnings, result.liquid_revenue);
     result.net_debt_by_equity = calcNetDebitEquity(data.additional_leverage_total, data.liquid_debit, data.liquid_assets);

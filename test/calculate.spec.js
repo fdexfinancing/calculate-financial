@@ -7,12 +7,10 @@ test('functions should be defined', () => {
 test('should return expected schema', () => {
     const res = calculateDREBalance({}, {});
 
-    console.log(res);
-
-    expect(res).toHaveProperty('growth', '');
+    expect(res).toHaveProperty('growth', NaN);
     expect(res).toHaveProperty('gross_result', '');
     expect(res).toHaveProperty('operational_result', 0);
-    expect(res).toHaveProperty('ebitda', 0);
+    expect(res).toHaveProperty('_ebitda', 0);
     expect(res).toHaveProperty('liquid_profit_before_ir', 0);
     expect(res).toHaveProperty('liquid_profit', 0);
     expect(res).toHaveProperty('total_tax_liability', '');
@@ -20,7 +18,7 @@ test('should return expected schema', () => {
     expect(res).toHaveProperty('liquid_debit_with_liability', '');
     expect(res).toHaveProperty('k_variation', 0);
     expect(res).toHaveProperty('financial_debits', 0);
-    expect(res).toHaveProperty('additional_leverage_cp', 0);
+    expect(res).toHaveProperty('additional_leverage_cp', NaN);
     expect(res).toHaveProperty('additional_leverage_total', 0);
 
     expect(res).toHaveProperty('total_revenue', 0);
