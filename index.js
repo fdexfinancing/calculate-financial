@@ -39,7 +39,7 @@ function calcGrowth(net_income_year_before, net_income) {
     if(isNaN(parseFloat(net_income)) || isNaN(parseFloat(net_income_year_before)) || parseFloat(net_income_year_before) == 0) {
         return "";
     }
-
+    
     return ((parseFloat(net_income) - parseFloat(net_income_year_before)) / parseFloat(net_income_year_before)) * 100;
 }
 

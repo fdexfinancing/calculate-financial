@@ -37,7 +37,6 @@ test('should return correct value to growth', () => {
     expect(parseInt(res.growth)).toEqual(-38);
 });
 
-
 test('should return correct value to with all fields', () => {
     const res = calculateDREBalance(balanceData, {});
 
