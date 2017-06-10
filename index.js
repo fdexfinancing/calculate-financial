@@ -2,47 +2,41 @@ const defaultOptions = {
     decimal: 0
 };
 
+function calculateBalanceAndIndicators(data = {}, options) {
+    const result = {};
+
+    result.balance = calculateDREBalance(data, {});
+
+    result.indicators = calculateIndicators(Object.assign(data, result.balance), {});
+
+    return result;
+}
+
 function calculateDREBalance(data = {}, options) {
-    const result = Object.assign({}, data);
+    const result = {};
     options = options || defaultOptions;
 
     result.growth = calcGrowth(data.net_income_year_before, data.net_income);
-
     result.gross_result = calcGrossResult(data.net_income, data.sold_product_cost);
-
     result.operational_result = calcOperationalResult(result.gross_result, data.adm_cost, data.sell_team_cost, data.op_cost);
-
     result._ebitda = calcEbitda(result.operational_result, data.depreciation);
-
     result.liquid_profit_before_ir = calcLiquidProfitBeforeIR(result.operational_result, data.financial_result, data.rev_exp_no_rec, data.other);
-
     result.liquid_profit = calcLiquidProfit(result.liquid_profit_before_ir, data.exp_ir_csll);
-
     result.total_tax_liability = calcTotalTaxLiability(data.taxes_cp, data.taxes_lp);
-
     result.liquid_debit = calcLiquidDebit(data.cash_availability, data.onerous_liability_cp, data.onerous_liability_lp, data.adjust_liquid_debit);
-
     result.liquid_debit_with_liability = calcLiquidDebitWithLiability(result.liquid_debit, result.total_tax_liability);
-
     result.k_variation = calcKVariation(data.customer_receive_year_before, data.stock_year_before, data.bills_pay_before, data.customer_receive, data.stock, data.bills_pay);
-
     result.additional_leverage_total = calcAdditionalLeverage(data.leverage_quotient, data.target_value);
-
     result.financial_debits = calcFinancialDebits(result.additional_leverage_total, data.cdi);
-
     result.additional_leverage_cp = calcAdditionalLeverageCP(result.additional_leverage_total, data.target_term);
-
-    result.total_revenue = result.gross_result || 0;
-
+    result.total_revenue = data.gross_revenue || 0;
     result.total_debit = calcTotalDebit(data.onerous_liability_cp, data.onerous_liability_lp);
-
-    calculateIndicators(data, {});
 
     return result;
 }
 
 function calcGrowth(net_income_year_before, net_income) {
-    if(parseFloat(net_income_year_before) == 0) {
+    if(isNaN(parseFloat(net_income)) || isNaN(parseFloat(net_income_year_before)) || parseFloat(net_income_year_before) == 0) {
         return "";
     }
 
@@ -97,12 +91,18 @@ function calcTotalTaxLiability(taxes_cp, taxes_lp) {
     return parseFloat(taxes_cp) + parseFloat(taxes_lp);
 }
 
-function calcLiquidDebit(taxes_cp, taxes_lp) {
-    if(isNaN(parseFloat(taxes_cp) + parseFloat(taxes_lp))) {
+function calcLiquidDebit(cash_availability, onerous_liability_cp, onerous_liability_lp, adjust_liquid_debit) {
+    if(isNaN(parseFloat(cash_availability)) || isNaN(parseFloat(onerous_liability_cp)) || isNaN(parseFloat(onerous_liability_lp))) {
         return "";
     }
 
-    return parseFloat(taxes_cp) + parseFloat(taxes_lp);
+    let l_debit = parseFloat(onerous_liability_cp) + parseFloat(onerous_liability_lp) - parseFloat(cash_availability);
+
+    if(!isNaN(parseFloat(adjust_liquid_debit))) {
+        l_debit += parseFloat(adjust_liquid_debit);
+    }
+
+    return l_debit;
 }
 
 function calcLiquidDebitWithLiability(liquid_debit, total_tax_liability) {
@@ -126,11 +126,11 @@ function calcKVariation(customer_receive_year_before = 0, stock_year_before = 0,
 }
 
 function calcFinancialDebits(additional_leverage_total, cdi = 0) {
-    if(additional_leverage_total == 0) {
+    if(isNaN(parseFloat(cdi)) || isNaN(additional_leverage_total)) {
         return 0;
     }
 
-    return ((parseFloat(cdi) + 8) / additional_leverage_total) * -1;
+    return (((parseFloat(cdi) + 8) /100) * additional_leverage_total) * -1;
 }
 
 function calcAdditionalLeverage(leverage_quotient = 0, target_value = 0) {
@@ -142,7 +142,7 @@ function calcAdditionalLeverage(leverage_quotient = 0, target_value = 0) {
 }
 
 function calcAdditionalLeverageCP(additional_leverage_total, target_term) {
-    if(parseFloat(target_term) == 0) {
+    if(isNaN(parseFloat(target_term)) || parseFloat(target_term) == 0) {
         return 0;
     }
 
@@ -158,33 +158,35 @@ function calcTotalDebit(onerous_liability_cp, onerous_liability_lp) {
 }
 
 function calculateIndicators(data = {}, options) {
-    const result = Object.assign({}, data);
+    const result = {};
     options = options || defaultOptions;
 
-    result.anual_gross_revenue = calcGrossRevenue(data.gross_result, data.month_quantity);
+    result.anual_gross_revenue = calcGrossRevenue(data.gross_revenue, data.month_quantity);
     result.liquid_revenue = calcLiquidRevenue(data.net_income, data.month_quantity);
     result.equity = parseFloat(data.liquid_assets);
     result.ebitda = calcLajida(data._ebitda, data.month_quantity);
-    result.ebitda_by_net_revenue = calcLajidaNetRevenue(result.ebitda, esult.liquid_revenue);
+    result.ebitda_by_net_revenue = calcLajidaNetRevenue(result.ebitda, result.liquid_revenue);
     result.net_earnings = calcNetEarnings(data.liquid_profit, data.month_quantity);
     result.net_earnings_by_net_revenue = calcNetEarningsNetRevenue(result.net_earnings, result.liquid_revenue);
     result.net_debt_by_equity = calcNetDebitEquity(data.additional_leverage_total, data.liquid_debit, data.liquid_assets);
     result.net_debt_by_ebitda = calcNetDebitEbitda(data.liquid_debit, data.additional_leverage_total, result.ebitda, data.month_quantity);
-    result.net_debt_plus_taxes_by_ebitda = calcNetDebitTaxesEbitda(data.liquid_debit_with_liability, data.additional_leverage_tota, result.ebitda);
+    result.net_debt_plus_taxes_by_ebitda = calcNetDebitTaxesEbitda(data.liquid_debit_with_liability, data.additional_leverage_total, result.ebitda);
     result.net_debt_by_ebitda_interest = calcNetDebitEbitdaInterest(data.liquid_debit, data.additional_leverage_total, data.financial_result, data.financial_debits, data._ebitda, data.month_quantity);
-    result.gross_debt_by_monthly_revenue = calcGrossDebtMonthlyRevenue(data.onerous_liability_cp, data.onerous_liability_lp, data.additional_leverage_total, data.gross_result, data.month_quantity);
-    result.current_debt_by_monthly_revenue = calcCurrentDebtMonthlyRevenue(data.onerous_liability_cp, data.additional_leverage_total, data.gross_result, data.month_quantity);
-    result.current_ratio = calcCurrentRatio(data.current_assets, data.liability_cp);
-    result.quick_ratio = calcQuickRatio(data.current_assets, data.stock, data.liability_cp);
-    result.debt_ratio = calcDebitRatio(data.current_assets, data.no_current_assets, data.abilities_cp, data.liabilities_lp);
+    result.gross_debt_by_monthly_revenue = calcGrossDebtMonthlyRevenue(data.onerous_liability_cp, data.onerous_liability_lp, data.additional_leverage_total, data.gross_revenue, data.month_quantity);
+    result.current_debt_by_monthly_revenue = calcCurrentDebtMonthlyRevenue(data.onerous_liability_cp, data.additional_leverage_total, data.gross_revenue, data.month_quantity);
+    result.current_ratio = calcCurrentRatio(data.current_assets, data.liabilities_cp);
+    result.quick_ratio = calcQuickRatio(data.current_assets, data.stock, data.additional_leverage_total, data.liabilities_lp);
+    result.debt_ratio = calcDebitRatio(data.current_assets, data.no_current_assets, data.liabilities_cp, data.liabilities_lp);
     result.interest_coverage = calcInterestCoverage(data._ebitda, data.financial_result, data.financial_debits);
     result.interest_coveraty_minus_working_capital = calcInterestCoveratyMinusWorkingCapital(data._ebitda, data.financial_result, data.financial_debits, data.k_variation);
     result.usd_income = !isNaN(parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue)) ? parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue) : "";
     result.default_ninetydays_by_equity = calcDefaultNinetydaysEquity(data.liquid_assets, data.serasa, data.refin);
+
+    return result;
 }
 
 function calcGrossRevenue(gross_revenue, month_quantity) {
-    if(parseFloat(month_quantity) != 0) {
+    if(parseInt(month_quantity) != 0) {
         return parseFloat(gross_revenue)/parseInt(month_quantity) * 12;
     }
 
@@ -209,7 +211,7 @@ function calcLajida(ebitda, month_quantity) {
 
 function calcLajidaNetRevenue(ebitda, liquid_revenue) {
     if(parseFloat(liquid_revenue) != 0) {
-        return (ebitda/ liquid_revenue) * 100;
+        return (ebitda / liquid_revenue);
     }
 
     return "";
@@ -225,7 +227,7 @@ function calcNetEarnings(liquid_profit, month_quantity) {
 
 function calcNetEarningsNetRevenue(net_earnings, liquid_revenue) {
     if(parseFloat(liquid_revenue) != 0) {
-        return (net_earnings/ liquid_revenue) * 100;
+        return (net_earnings/ liquid_revenue);
     }
 
     return "";
@@ -269,17 +271,17 @@ function calcNetDebitEbitdaInterest(liquid_debit, additional_leverage_total, fin
     return (liquid_debit + additional_leverage_total) / ((ebitdaResut/yearProjectionResult) + financial_debits);
 }
 
-function calcGrossDebtMonthlyRevenue(onerous_liability_cp, onerous_liability_lp, additional_leverage_total, gross_result, month_quantity) {
-    if(parseFloat(gross_result) != 0 && parseFloat(month_quantity) != 0) {
-        return (onerous_liability_cp + onerous_liability_lp + additional_leverage_total) / (gross_result/month_quantity);
+function calcGrossDebtMonthlyRevenue(onerous_liability_cp, onerous_liability_lp, additional_leverage_total, gross_revenue, month_quantity) {
+    if(parseFloat(gross_revenue) != 0 && parseFloat(month_quantity) != 0) {
+        return (onerous_liability_cp + onerous_liability_lp + additional_leverage_total) / (gross_revenue/month_quantity);
     }
 
     return "";
 }
 
-function calcCurrentDebtMonthlyRevenue(onerous_liability_cp, additional_leverage_total, gross_result, month_quantity) {
-    if(parseFloat(gross_result) != 0 && parseFloat(month_quantity) != 0) {
-        return (onerous_liability_cp + additional_leverage_total) / (gross_result/month_quantity);
+function calcCurrentDebtMonthlyRevenue(onerous_liability_cp, additional_leverage_total, gross_revenue, month_quantity) {
+    if(parseFloat(gross_revenue) != 0 && parseFloat(month_quantity) != 0) {
+        return (onerous_liability_cp + additional_leverage_total) / (gross_revenue/month_quantity);
     }
 
     return "";
@@ -293,9 +295,9 @@ function calcCurrentRatio(current_assets, liabilities_cp) {
     return "";
 }
 
-function calcQuickRatio(current_assets, stock = 0, liabilities_cp) {
+function calcQuickRatio(current_assets, stock = 0, additional_leverage_total, liabilities_cp) {
     if(parseFloat(liabilities_cp) != 0) {
-        return (parseFloat(current_assets) - parseFloat(stock))/parseFloat(liabilities_cp);
+        return (parseFloat(current_assets) - parseFloat(stock) + parseFloat(additional_leverage_total))/parseFloat(liabilities_cp);
     }
 
     return "";
@@ -353,20 +355,14 @@ function calcDefaultNinetydaysEquity(liquid_assets, serasa, refin) {
     return (serasa + refin)/liquid_assets;
 }
 
-// CDI
-// all with year before
-// target_value
-// leverage_quotient
-// target_term
-//Serasa and refin value
-
 //adicionar ativo circulante tabela de dre e balanço = current_assets
-
 //adicionar leverage_quotient para ser colocado pelo bo
 
 
 window.module = window.module || {};
 
 module.exports = {
-    calculateDREBalance
+    calculateDREBalance,
+    calculateIndicators,
+    calculateBalanceAndIndicators
 };
