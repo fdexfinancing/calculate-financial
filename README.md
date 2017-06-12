@@ -1,4 +1,4 @@
-# Package to calculate financial data baed on DRE and balance
+# Package to calculate financial data based on DRE and balance
 
 ### Available Function
     calculateBalanceAndIndicators(data, options)
