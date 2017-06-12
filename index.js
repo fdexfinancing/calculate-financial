@@ -355,9 +355,6 @@ function calcDefaultNinetydaysEquity(liquid_assets, serasa, refin) {
     return (serasa + refin)/liquid_assets;
 }
 
-//adicionar ativo circulante tabela de dre e balanço = current_assets
-//adicionar leverage_quotient para ser colocado pelo bo
-
 
 window.module = window.module || {};
 
