@@ -1,6 +1,6 @@
 {
   "name": "fx-calculate-financial",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Library to calculate financial data of company",
   "main": "index.js",
   "scripts": {
