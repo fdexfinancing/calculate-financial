@@ -17,6 +17,7 @@ function calculateDREBalance(data = {}, options) {
     options = options || defaultOptions;
 
     result.growth = calcGrowth(data.net_income_year_before, data.net_income);
+    result.growth_year_before = calcGrowth(data.net_income_year_before_before, data.net_income_year_before);
     result.gross_result = calcGrossResult(data.net_income, data.sold_product_cost);
     result.operational_result = calcOperationalResult(result.gross_result, data.adm_cost, data.sell_team_cost, data.op_cost);
     result._ebitda = calcEbitda(result.operational_result, data.depreciation);
@@ -181,6 +182,13 @@ function calculateIndicators(data = {}, options) {
     result.interest_coveraty_minus_working_capital = calcInterestCoveratyMinusWorkingCapital(data._ebitda, data.financial_result, data.financial_debits, data.k_variation);
     result.usd_income = !isNaN(parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue)) ? parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue) : "";
     result.default_ninetydays_by_equity = calcDefaultNinetydaysEquity(data.liquid_assets, data.serasa, data.refin);
+    const growthRevenue = calcGrowthRevenue(data.growth_year_before, data.growth);
+    
+    if(growthRevenue) {
+        result.avgGrowth = growthRevenue.average;
+        result.maxGrowth = growthRevenue.max;
+        result.minGrowth = growthRevenue.min;
+    }
 
     return result;
 }
@@ -353,6 +361,31 @@ function calcDefaultNinetydaysEquity(liquid_assets, serasa, refin) {
     }
 
     return (serasa + refin)/liquid_assets;
+}
+
+function calcGrowthRevenue(growth_year_before, growth) {
+    growth_year_before = parseFloat(growth_year_before);
+    growth = parseFloat(growth);
+
+    if(isNaN(growth)) {
+        return "";
+    }
+
+    if(isNaN(growth_year_before)) {
+        return {
+            average: growth,
+            max: growth,
+            min: growth
+
+        };
+    }
+
+    return {
+        average: (growth_year_before + growth)/2,
+        max: Math.max(growth_year_before , growth),
+        min: Math.min(growth_year_before , growth)
+
+    };
 }
 
 

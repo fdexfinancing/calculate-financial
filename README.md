@@ -8,6 +8,7 @@ Input data example
   ```json
 {
     gross_revenue: 70855981,
+    net_income_year_before_before: 0,
     net_income_year_before: 88670000,
     net_income: 54650123,
     sold_product_cost: 49450123,
@@ -89,6 +90,9 @@ Input data example
         interest_coverage: 0,
         interest_coveraty_minus_working_capital: 0,
         usd_income: '',
-        default_ninetydays_by_equity: 0
+        default_ninetydays_by_equity: 0,
+        avgGrowth: -38.36683996842224,
+        maxGrowth: -38.36683996842224,
+        minGrowth: -38.36683996842224
     }
 }
