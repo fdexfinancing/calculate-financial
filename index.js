@@ -182,6 +182,7 @@ function calculateIndicators(data = {}, options) {
     result.interest_coveraty_minus_working_capital = calcInterestCoveratyMinusWorkingCapital(data._ebitda, data.financial_result, data.financial_debits, data.k_variation);
     result.usd_income = !isNaN(parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue)) ? parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue) : "";
     result.default_ninetydays_by_equity = calcDefaultNinetydaysEquity(data.liquid_assets, data.serasa, data.refin);
+    result.home_equity = calcHomeEquity(data.related_parts_cp, data.related_parts_lp, data.liquid_assets, result.ebitda_by_net_revenue);
     const growthRevenue = calcGrowthRevenue(data.growth_year_before, data.growth);
     
     if(growthRevenue) {
@@ -386,6 +387,27 @@ function calcGrowthRevenue(growth_year_before, growth) {
         min: Math.min(growth_year_before , growth)
 
     };
+}
+
+
+function calcHomeEquity(related_parts_cp, related_parts_lp, liquid_assets, ebitda_by_net_revenue) {
+    if(isNaN(parseFloat(related_parts_cp)) ||  isNaN(parseFloat(related_parts_lp)) || isNaN(parseFloat(liquid_assets))) {
+        return 1;
+    }
+
+    if((parseFloat(related_parts_cp) +  parseFloat(related_parts_lp) <= 0)) {
+        return 1;
+    }
+
+    if((parseFloat(related_parts_cp) +  parseFloat(related_parts_lp) < (parseFloat(liquid_assets) * 0.6))) {
+        return 1;
+    }
+
+    if(ebitda_by_net_revenue >= 0.05) {
+        return 1;
+    }
+    
+    return 0;
 }
 
 

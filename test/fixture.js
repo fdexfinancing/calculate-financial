@@ -22,6 +22,8 @@ const balanceData = {
     bills_pay: 16423411,
     taxes_cp: 5157445,
     taxes_lp: 5887392,
+    related_parts_cp: 0,
+    related_parts_lp: 9842582,
     liabilities_cp: 31079203,
     liabilities_lp: 34237169,
     onerous_liability_cp: 9498347,

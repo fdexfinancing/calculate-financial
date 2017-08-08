@@ -82,6 +82,7 @@ test('should return correct value to with all fields', () => {
     expect(res.interest_coveraty_minus_working_capital).toEqual(0);
     expect(res.usd_income).toEqual('');
     expect(res.default_ninetydays_by_equity).toEqual(0);
+    expect(res.home_equity).toEqual(0);
 });
 
 test('should return indicators and balance', () => {

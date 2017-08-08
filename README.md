@@ -33,6 +33,8 @@ Input data example
     taxes_lp: 5887392,
     liabilities_cp: 31079203,
     liabilities_lp: 34237169,
+    related_parts_cp: 0,
+    related_parts_lp: 0,
     onerous_liability_cp: 9498347,
     onerous_liability_lp: 9842582,
     liquid_assets: 5393734,
@@ -93,6 +95,7 @@ Input data example
         default_ninetydays_by_equity: 0,
         avgGrowth: -38.36683996842224,
         maxGrowth: -38.36683996842224,
-        minGrowth: -38.36683996842224
+        minGrowth: -38.36683996842224,
+        home_equity: 0
     }
 }

@@ -220,9 +220,9 @@ function calculateIndicators() {
     var growthRevenue = calcGrowthRevenue(data.growth_year_before, data.growth);
 
     if (growthRevenue) {
-        result.avgGrowth = growthRevenue.average;
-        result.maxGrowth = growthRevenue.max;
-        result.minGrowth = growthRevenue.min;
+        result.avg_growth = growthRevenue.average;
+        result.max_growth = growthRevenue.max;
+        result.min_growth = growthRevenue.min;
     }
 
     return result;
