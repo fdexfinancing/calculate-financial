@@ -160,7 +160,7 @@ function calcTotalDebit(onerous_liability_cp, onerous_liability_lp) {
     return parseFloat(onerous_liability_cp) + parseFloat(onerous_liability_lp);
 }
 
-function calcBills(taxes_cp, liabilities_cp, related_parts_cp, onerous_liability_cp) {
+function calcBills(taxes_cp = 0, liabilities_cp = 0, related_parts_cp = 0, onerous_liability_cp = 0) {
     if(isNaN(parseFloat(liabilities_cp) - parseFloat(taxes_cp) - parseFloat(related_parts_cp) - parseFloat(onerous_liability_cp))) {
         return 0;
     }
