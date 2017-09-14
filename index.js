@@ -26,7 +26,9 @@ function calculateDREBalance(data = {}, options) {
     result.total_tax_liability = calcTotalTaxLiability(data.taxes_cp, data.taxes_lp);
     result.liquid_debit = calcLiquidDebit(data.cash_availability, data.onerous_liability_cp, data.onerous_liability_lp, data.adjust_liquid_debit);
     result.liquid_debit_with_liability = calcLiquidDebitWithLiability(result.liquid_debit, result.total_tax_liability);
-    result.k_variation = calcKVariation(data.customer_receive_year_before, data.stock_year_before, data.bills_pay_before, data.customer_receive, data.stock, data.bills_pay);
+    result.bills_pay_before = calcBills(data.taxes_cp_before, data.liabilities_cp_before, data.related_parts_cp_before, data.onerous_liability_cp_before);
+    result.bills_pay = calcBills(data.taxes_cp, data.liabilities_cp, data.related_parts_cp, data.onerous_liability_cp);
+    result.k_variation = calcKVariation(data.customer_receive_year_before, data.stock_year_before, result.bills_pay_before, data.customer_receive, data.stock, result.bills_pay);
     result.additional_leverage_total = calcAdditionalLeverage(data.leverage_quotient, data.target_value);
     result.financial_debits = calcFinancialDebits(result.additional_leverage_total, data.cdi);
     result.additional_leverage_cp = calcAdditionalLeverageCP(result.additional_leverage_total, data.target_term);
@@ -156,6 +158,14 @@ function calcTotalDebit(onerous_liability_cp, onerous_liability_lp) {
     }
 
     return parseFloat(onerous_liability_cp) + parseFloat(onerous_liability_lp);
+}
+
+function calcBills(taxes_cp, liabilities_cp, related_parts_cp, onerous_liability_cp) {
+    if(isNaN(parseFloat(liabilities_cp) - parseFloat(taxes_cp) - parseFloat(related_parts_cp) - parseFloat(onerous_liability_cp))) {
+        return 0;
+    }
+
+    return parseFloat(liabilities_cp) - parseFloat(taxes_cp) - parseFloat(related_parts_cp) - parseFloat(onerous_liability_cp);
 }
 
 function calculateIndicators(data = {}, options) {

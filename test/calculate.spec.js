@@ -55,6 +55,7 @@ test('should return correct value to with all fields', () => {
     expect(res.additional_leverage_cp).toEqual(1500000);
     expect(res.total_revenue).toEqual(70855981);
     expect(res.total_debit).toEqual(19340929);
+    expect(res.bills_pay).toEqual(16423411);
 });
 
 test('should return correct value to with all fields', () => {
