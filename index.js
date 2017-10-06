@@ -2,12 +2,25 @@ const defaultOptions = {
     decimal: 0
 };
 
-function calculateBalanceAndIndicators(data = {}, options) {
+const index = {
+    interest: [10.9, 2.7, 2.6, 1.6, 1.2, 0.5],
+    debt: [1, 2.6, 4.1, 4.9, 5.1, 12.6],
+    ebit: [31, 16, 12, 9, 2, -5]
+}
+
+function calculateBalanceAndIndicators(data = {}, options = {}) {
     const result = {};
 
-    result.balance = calculateDREBalance(data, {});
+    result.balance = calculateDREBalance(data, options);
 
-    result.indicators = calculateIndicators(Object.assign(data, result.balance), {});
+    result.indicators = calculateIndicators(Object.assign(data, result.balance), options);
+
+    result.theoretic_rating = calculateTheoreticRating({
+        interest_coverage: result.indicators.interest_coverage,
+        ebitda: result.indicators.ebitda,
+        liquid_debit: result.balance.liquid_debit,
+        operational_result: result.balance.operational_result,
+        net_income: data.net_income}, options);
 
     return result;
 }
@@ -420,11 +433,91 @@ function calcHomeEquity(related_parts_cp, related_parts_lp, liquid_assets, ebitd
     return 0;
 }
 
+function calculateTheoreticRating(data = {}, options) {
+    const rating = {
+        1: 'aaa',
+        2: 'aa',
+        3: 'a',
+        4: 'bbb',
+        5: 'bb',
+        6: 'bb-'
+    };
+    
+    options = options || defaultOptions;
+
+
+    let j = calcRatingInterestCoverage(data.interest_coverage);
+    let d = calcRatingTotalDebt(data.ebitda, data.liquid_debit);
+    let e = calcRatingEbit(data.operational_result, data.net_income);
+
+    result = Math.ceil((j + d + e) / 3);
+    
+    return rating[result];
+}
+
+function calcRatingInterestCoverage(interest_coverage) {
+    let j = index.interest.length;
+
+    index.interest.every(r => {
+        if (interest_coverage >= r) {
+            j = index.interest.indexOf(r) + 1;
+            return false;
+        }
+
+        return true;
+    });
+
+    return j;
+}
+
+function calcRatingTotalDebt(ebitda, liquid_debit) {
+    let d = index.debt.length;
+
+    if(ebitda <= 0 || liquid_debit <= 0) {
+        return d;
+    }
+
+    debt_ebitda = liquid_debit / ebitda;
+
+    index.debt.every(r => {
+        if (debt_ebitda <= r) {
+            d = index.debt.indexOf(r) + 1;
+            return false;
+        }
+
+        return true;
+    });
+
+    return d;
+}
+
+function calcRatingEbit(operational_result, net_income) {
+    let e = index.ebit.length;
+
+    if(net_income == 0) {
+        return e;
+    }
+
+    margin_ebit = operational_result / net_income;
+
+    index.ebit.every(r => {
+        if (margin_ebit >= r) {
+            e = index.ebit.indexOf(r) + 1;
+            return false;
+        }
+
+        return true;
+    });
+
+    return e;
+}
+
 
 window.module = window.module || {};
 
 module.exports = {
     calculateDREBalance,
     calculateIndicators,
-    calculateBalanceAndIndicators
+    calculateBalanceAndIndicators,
+    calculateTheoreticRating
 };

@@ -1,4 +1,4 @@
-const {calculateDREBalance, calculateIndicators, calculateBalanceAndIndicators} = require('../index');
+const {calculateDREBalance, calculateIndicators, calculateBalanceAndIndicators, calculateTheoryRating} = require('../index');
 
 const {balanceData} = require('./fixture');
 
@@ -91,4 +91,17 @@ test('should return indicators and balance', () => {
 
     expect(res).toHaveProperty('balance');
     expect(res).toHaveProperty('indicators');
+});
+
+
+test('should return theory rating', () => {
+    const res = calculateTheoreticRating({
+        interest_coverage: 0,
+        ebitda: -1142036,
+        liquid_debit: 17601019,
+        operational_result: -2327053,
+        net_income: 54650123
+    }, {});
+
+    expect(res).toEqual('bb-');
 });

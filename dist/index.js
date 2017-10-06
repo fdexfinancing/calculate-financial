@@ -192,7 +192,12 @@ function calcTotalDebit(onerous_liability_cp, onerous_liability_lp) {
     return parseFloat(onerous_liability_cp) + parseFloat(onerous_liability_lp);
 }
 
-function calcBills(taxes_cp, liabilities_cp, related_parts_cp, onerous_liability_cp) {
+function calcBills() {
+    var taxes_cp = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+    var liabilities_cp = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    var related_parts_cp = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+    var onerous_liability_cp = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
     if (isNaN(parseFloat(liabilities_cp) - parseFloat(taxes_cp) - parseFloat(related_parts_cp) - parseFloat(onerous_liability_cp))) {
         return 0;
     }
