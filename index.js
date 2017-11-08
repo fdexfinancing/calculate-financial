@@ -458,6 +458,8 @@ function calculateTheoreticRating(data = {}, options) {
 function calcRatingInterestCoverage(interest_coverage) {
     let j = index.interest.length;
 
+    interest_coverage = Math.ceil(interest_coverage * 100) / 100;
+
     index.interest.every(r => {
         if (interest_coverage >= r) {
             j = index.interest.indexOf(r) + 1;
@@ -477,7 +479,7 @@ function calcRatingTotalDebt(ebitda, liquid_debit) {
         return d;
     }
 
-    debt_ebitda = liquid_debit / ebitda;
+    debt_ebitda = Math.ceil((liquid_debit / ebitda) * 100)/100;
 
     index.debt.every(r => {
         if (debt_ebitda <= r) {
@@ -498,7 +500,7 @@ function calcRatingEbit(operational_result, net_income) {
         return e;
     }
 
-    margin_ebit = operational_result / net_income;
+    margin_ebit = (operational_result / net_income) * 100;
 
     index.ebit.every(r => {
         if (margin_ebit >= r) {
