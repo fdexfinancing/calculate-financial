@@ -56,6 +56,13 @@ function calculateDREBalance() {
     result.total_revenue = data.gross_revenue || 0;
     result.total_debit = calcTotalDebit(data.onerous_liability_cp, data.onerous_liability_lp);
 
+    result.operational_margin = calcOperationalMargin(result.operational_result, result.liquid_profit);
+    result.ebitda_margin = calcEbitdaMargin(result._ebitda, result.liquid_profit);
+    result.liquid_debt_by_monthly_income = calcLiquidDebtByMonthlyRevenue(result.liquid_debit, data.month_quantity);
+    result.liquid_debt_by_ebitda = calcLiquidDebtByEbitda(result.liquid_debit, result._ebitda);
+    result.coverage = calcCoverage(result._ebitda, data.financial_result);
+    result.liquid_debit_and_interest_by_ebitda = calcLiquidDebtAndTaxesByEbitda(result.liquid_debit, result.total_tax_liability, result._ebitda, data.month_quantity);
+
     return result;
 }
 
@@ -495,7 +502,7 @@ function calculateTheoreticRating() {
     var d = calcRatingTotalDebt(data.ebitda, data.liquid_debit);
     var e = calcRatingEbit(data.operational_result, data.net_income);
 
-    result = Math.ceil((j + d + e) / 3);
+    var result = Math.ceil((j + d + e) / 3);
 
     return rating[result];
 }
@@ -522,7 +529,7 @@ function calcRatingTotalDebt(ebitda, liquid_debit) {
         return d;
     }
 
-    debt_ebitda = liquid_debit / ebitda;
+    var debt_ebitda = liquid_debit / ebitda;
 
     index.debt.every(function (r) {
         if (debt_ebitda <= r) {
@@ -543,7 +550,7 @@ function calcRatingEbit(operational_result, net_income) {
         return e;
     }
 
-    margin_ebit = operational_result / net_income;
+    var margin_ebit = operational_result / net_income;
 
     index.ebit.every(function (r) {
         if (margin_ebit >= r) {
@@ -555,6 +562,30 @@ function calcRatingEbit(operational_result, net_income) {
     });
 
     return e;
+}
+
+function calcOperationalMargin(op_result, liquid_revenue) {
+    return op_result / liquid_revenue
+}
+
+function calcEbitdaMargin(ebitda, liquid_revenue) {
+    return ebitda / liquid_revenue
+}
+
+function calcLiquidDebtByMonthlyRevenue(liquid_debt, month_amount) {
+    return liquid_debt / month_amount
+}
+
+function calcLiquidDebtByEbitda(liquid_debt, ebitda) {
+    return liquid_debt / ebitda
+}
+
+function calcCoverage(ebitda, financial_result) {
+    return ebitda, financial_result
+}
+
+function calcLiquidDebtAndTaxesByEbitda(liquid_debt, tax_liability, ebitda, month_amount) {
+    return (liquid_debt + tax_liability) / ((ebitda / month_amount) * 12)
 }
 
 window.module = window.module || {};
