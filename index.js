@@ -29,8 +29,8 @@ function calculateDREBalance(data = {}, options) {
     const result = {};
     options = options || defaultOptions;
 
-    result.growth = calcGrowth(data.net_income_year_before, data.net_income);
-    result.growth_year_before = calcGrowth(data.net_income_year_before_before, data.net_income_year_before);
+    result.growth = calcGrowth(data.net_income_before, data.net_income);
+    result.growth_year_before = calcGrowth(data.net_income_before_before, data.net_income_before);
     result.gross_result = calcGrossResult(data.net_income, data.sold_product_cost);
     result.operational_result = calcOperationalResult(result.gross_result, data.adm_cost, data.sell_team_cost, data.op_cost);
     result._ebitda = calcEbitda(result.operational_result, data.depreciation);
@@ -41,22 +41,29 @@ function calculateDREBalance(data = {}, options) {
     result.liquid_debit_with_liability = calcLiquidDebitWithLiability(result.liquid_debit, result.total_tax_liability);
     result.bills_pay_before = calcBills(data.taxes_cp_before, data.liabilities_cp_before, data.related_parts_cp_before, data.onerous_liability_cp_before);
     result.bills_pay = calcBills(data.taxes_cp, data.liabilities_cp, data.related_parts_cp, data.onerous_liability_cp);
-    result.k_variation = calcKVariation(data.customer_receive_year_before, data.stock_year_before, result.bills_pay_before, data.customer_receive, data.stock, result.bills_pay);
+    result.k_variation = calcKVariation(data.customer_receive_before, data.stock_year_before, result.bills_pay_before, data.customer_receive, data.stock, result.bills_pay);
     result.additional_leverage_total = calcAdditionalLeverage(data.leverage_quotient, data.target_value);
     result.financial_debits = calcFinancialDebits(result.additional_leverage_total, data.cdi);
     result.additional_leverage_cp = calcAdditionalLeverageCP(result.additional_leverage_total, data.target_term);
     result.total_revenue = data.gross_revenue || 0;
     result.total_debit = calcTotalDebit(data.onerous_liability_cp, data.onerous_liability_lp);
 
+    result.operational_margin = calcOperationalMargin(result.operational_result, result.liquid_profit);
+    result.ebitda_margin = calcEbitdaMargin(result._ebitda, result.liquid_profit);
+    result.liquid_debt_by_monthly_income = calcLiquidDebtByMonthlyRevenue(result.liquid_debit, data.month_quantity);
+    result.liquid_debt_by_ebitda = calcLiquidDebtByEbitda(result.liquid_debit, result._ebitda);
+    result.coverage = calcCoverage(result._ebitda, data.financial_result);
+    result.liquid_debit_and_interest_by_ebitda = calcLiquidDebtAndTaxesByEbitda(result.liquid_debit, result.total_tax_liability, result._ebitda, data.month_quantity);
+
     return result;
 }
 
-function calcGrowth(net_income_year_before, net_income) {
-    if(isNaN(parseFloat(net_income)) || isNaN(parseFloat(net_income_year_before)) || parseFloat(net_income_year_before) == 0) {
+function calcGrowth(net_income_before, net_income) {
+    if(isNaN(parseFloat(net_income)) || isNaN(parseFloat(net_income_before)) || parseFloat(net_income_before) == 0) {
         return "";
     }
     
-    return ((parseFloat(net_income) - parseFloat(net_income_year_before)) / parseFloat(net_income_year_before)) * 100;
+    return ((parseFloat(net_income) - parseFloat(net_income_before)) / parseFloat(net_income_before)) * 100;
 }
 
 function calcGrossResult(net_income, sold_product_cost) {
@@ -129,10 +136,10 @@ function calcLiquidDebitWithLiability(liquid_debit, total_tax_liability) {
     return liquid_debit + total_tax_liability;
 }
 
-function calcKVariation(customer_receive_year_before = 0, stock_year_before = 0, bills_pay_before = 0, customer_receive = 0, stock = 0, bills_pay = 0) {
+function calcKVariation(customer_receive_before = 0, stock_year_before = 0, bills_pay_before = 0, customer_receive = 0, stock = 0, bills_pay = 0) {
     let k_variation = Math.max(parseFloat(customer_receive), 0) + Math.max(parseFloat(stock), 0) - Math.max(parseFloat(bills_pay), 0);
 
-    let k_variation_year_before = Math.max(parseFloat(customer_receive_year_before), 0) + Math.max(parseFloat(stock_year_before), 0) - Math.max(parseFloat(bills_pay_before), 0);
+    let k_variation_year_before = Math.max(parseFloat(customer_receive_before), 0) + Math.max(parseFloat(stock_year_before), 0) - Math.max(parseFloat(bills_pay_before), 0);
 
     if(isNaN(k_variation - k_variation_year_before)) {
         return ""
@@ -513,6 +520,31 @@ function calcRatingEbit(operational_result, net_income) {
 
     return e;
 }
+
+function calcOperationalMargin(op_result, liquid_revenue) {
+    return op_result / liquid_revenue
+}
+
+function calcEbitdaMargin(ebitda, liquid_revenue) {
+    return ebitda / liquid_revenue
+}
+
+function calcLiquidDebtByMonthlyRevenue(liquid_debt, month_amount) {
+    return liquid_debt / month_amount
+}
+
+function calcLiquidDebtByEbitda(liquid_debt, ebitda) {
+    return liquid_debt / ebitda
+}
+
+function calcCoverage(ebitda, financial_result) {
+    return ebitda, financial_result
+}
+
+function calcLiquidDebtAndTaxesByEbitda(liquid_debt, tax_liability, ebitda, month_amount) {
+    return (liquid_debt + tax_liability) / ((ebitda / month_amount) * 12)
+}
+
 
 
 window.module = window.module || {};
