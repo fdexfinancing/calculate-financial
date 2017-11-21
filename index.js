@@ -50,7 +50,7 @@ function calculateDREBalance(data = {}, options) {
 
     result.operational_margin = calcOperationalMargin(result.operational_result, data.net_income);
     result.ebitda_margin = calcEbitdaMargin(result._ebitda, data.net_income);
-    result.liquid_debt_by_monthly_income = calcLiquidDebtByMonthlyRevenue(result.liquid_debit, data.net_income, data.month_quantity);
+    result.liquid_debt_by_monthly_income = calcLiquidDebtByMonthlyRevenue(result.liquid_debit, data.gross_revenue, data.month_quantity);
     result.liquid_debt_by_ebitda = calcLiquidDebtByEbitda(result.liquid_debit, result._ebitda, data.month_quantity);
     result.coverage = calcCoverage(result._ebitda, data.financial_result);
     result.liquid_debit_and_interest_by_ebitda = calcLiquidDebtAndTaxesByEbitda(result.liquid_debit, result.total_tax_liability, result._ebitda, data.month_quantity);
@@ -522,27 +522,27 @@ function calcRatingEbit(operational_result, net_income) {
 }
 
 function calcOperationalMargin(op_result, net_income) {
-    return parseFloat(op_result) / parseFloat(net_income);
+    return (parseFloat(op_result) / parseFloat(net_income)) * 100;
 }
 
 function calcEbitdaMargin(ebitda, net_income) {
-    return parseFloat(ebitda)/ parseFloat(net_income)
+    return (parseFloat(ebitda)/ parseFloat(net_income)) * 100;
 }
 
-function calcLiquidDebtByMonthlyRevenue(liquid_debt, net_income, month_amount) {
-    return parseFloat(liquid_debt)/ (parseFloat(net_income) / parseFloat(month_amount))
+function calcLiquidDebtByMonthlyRevenue(liquid_debt, gross_revenue, month_amount) {
+    return parseFloat(liquid_debt)/ (parseFloat(gross_revenue) / parseFloat(month_amount));
 }
 
 function calcLiquidDebtByEbitda(liquid_debt, ebitda, month_amount) {
-    return parseFloat(liquid_debt)/ ((parseFloat(ebitda) / parseFloat(month_amount)) * 12)
+    return parseFloat(liquid_debt)/ ((parseFloat(ebitda) / parseFloat(month_amount)) * 12);
 }
 
 function calcCoverage(ebitda, financial_result) {
-    return parseFloat(ebitda) / -(parseFloat(financial_result))
+    return parseFloat(ebitda) / -(parseFloat(financial_result));
 }
 
 function calcLiquidDebtAndTaxesByEbitda(liquid_debt, tax_liability, ebitda, month_amount) {
-    return (parseFloat(liquid_debt)+ parseFloat(tax_liability)) / ((parseFloat(ebitda)/ parseFloat(month_amount)) * 12)
+    return (parseFloat(liquid_debt)+ parseFloat(tax_liability)) / ((parseFloat(ebitda)/ parseFloat(month_amount)) * 12);
 }
 
 
