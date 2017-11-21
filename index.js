@@ -29,8 +29,8 @@ function calculateDREBalance(data = {}, options) {
     const result = {};
     options = options || defaultOptions;
 
-    result.growth = calcGrowth(data.net_income_before, data.net_income);
-    result.growth_year_before = calcGrowth(data.net_income_before_before, data.net_income_before);
+    result.growth = calcGrowth(data.net_income_before, data.net_income, data.month_quantity, data.month_quantity_before);
+    result.growth_before = calcGrowth(data.net_income_before_before, data.net_income_before, data.month_quantity_before, data.month_quantity_before_before);
     result.gross_result = calcGrossResult(data.net_income, data.sold_product_cost);
     result.operational_result = calcOperationalResult(result.gross_result, data.adm_cost, data.sell_team_cost, data.op_cost);
     result._ebitda = calcEbitda(result.operational_result, data.depreciation);
@@ -41,7 +41,7 @@ function calculateDREBalance(data = {}, options) {
     result.liquid_debit_with_liability = calcLiquidDebitWithLiability(result.liquid_debit, result.total_tax_liability);
     result.bills_pay_before = calcBills(data.taxes_cp_before, data.liabilities_cp_before, data.related_parts_cp_before, data.onerous_liability_cp_before);
     result.bills_pay = calcBills(data.taxes_cp, data.liabilities_cp, data.related_parts_cp, data.onerous_liability_cp);
-    result.k_variation = calcKVariation(data.customer_receive_before, data.stock_year_before, result.bills_pay_before, data.customer_receive, data.stock, result.bills_pay);
+    result.k_variation = calcKVariation(data.customer_receive_before, data.stock_before, result.bills_pay_before, data.customer_receive, data.stock, result.bills_pay);
     result.additional_leverage_total = calcAdditionalLeverage(data.leverage_quotient, data.target_value);
     result.financial_debits = calcFinancialDebits(result.additional_leverage_total, data.cdi);
     result.additional_leverage_cp = calcAdditionalLeverageCP(result.additional_leverage_total, data.target_term);
@@ -58,12 +58,15 @@ function calculateDREBalance(data = {}, options) {
     return result;
 }
 
-function calcGrowth(net_income_before, net_income) {
-    if(isNaN(parseFloat(net_income)) || isNaN(parseFloat(net_income_before)) || parseFloat(net_income_before) == 0) {
-        return "";
+function calcGrowth(net_income_before, net_income, month_quantity, month_quantity_before) {
+    if(isNaN(parseFloat(net_income)) || isNaN(parseFloat(net_income_before)) || parseFloat(net_income_before) == 0 || parseFloat(month_quantity) == 0 || parseFloat(month_quantity_before) == 0) {
+       return "";
     }
+
+    const net_income_year = parseFloat(net_income)/(parseFloat(month_quantity)*12);
+    const net_income_before_year = parseFloat(net_income_before)/(parseFloat(month_quantity_before)*12);
     
-    return ((parseFloat(net_income) - parseFloat(net_income_before)) / parseFloat(net_income_before)) * 100;
+    return ((net_income_year - net_income_before_year) / net_income_before_year) * 100;
 }
 
 function calcGrossResult(net_income, sold_product_cost) {
@@ -136,16 +139,16 @@ function calcLiquidDebitWithLiability(liquid_debit, total_tax_liability) {
     return liquid_debit + total_tax_liability;
 }
 
-function calcKVariation(customer_receive_before = 0, stock_year_before = 0, bills_pay_before = 0, customer_receive = 0, stock = 0, bills_pay = 0) {
+function calcKVariation(customer_receive_before = 0, stock_before = 0, bills_pay_before = 0, customer_receive = 0, stock = 0, bills_pay = 0) {
     let k_variation = Math.max(parseFloat(customer_receive), 0) + Math.max(parseFloat(stock), 0) - Math.max(parseFloat(bills_pay), 0);
 
-    let k_variation_year_before = Math.max(parseFloat(customer_receive_before), 0) + Math.max(parseFloat(stock_year_before), 0) - Math.max(parseFloat(bills_pay_before), 0);
+    let k_variation_before = Math.max(parseFloat(customer_receive_before), 0) + Math.max(parseFloat(stock_before), 0) - Math.max(parseFloat(bills_pay_before), 0);
 
-    if(isNaN(k_variation - k_variation_year_before)) {
+    if(isNaN(k_variation - k_variation_before)) {
         return ""
     }
 
-    return k_variation - k_variation_year_before;
+    return k_variation - k_variation_before;
 }
 
 function calcFinancialDebits(additional_leverage_total, cdi = 0) {
@@ -213,7 +216,7 @@ function calculateIndicators(data = {}, options) {
     result.usd_income = !isNaN(parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue)) ? parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue) : "";
     result.default_ninetydays_by_equity = calcDefaultNinetydaysEquity(data.liquid_assets, data.serasa, data.refin);
     result.home_equity = calcHomeEquity(data.related_parts_cp, data.related_parts_lp, data.liquid_assets, result.ebitda_by_net_revenue);
-    const growthRevenue = calcGrowthRevenue(data.growth_year_before, data.growth);
+    const growthRevenue = calcGrowthRevenue(data.growth_before, data.growth);
     
     if(growthRevenue) {
         result.avg_growth = growthRevenue.average;
@@ -394,15 +397,15 @@ function calcDefaultNinetydaysEquity(liquid_assets, serasa, refin) {
     return (serasa + refin)/liquid_assets;
 }
 
-function calcGrowthRevenue(growth_year_before, growth) {
-    growth_year_before = parseFloat(growth_year_before);
+function calcGrowthRevenue(growth_before, growth) {
+    growth_before = parseFloat(growth_before);
     growth = parseFloat(growth);
 
     if(isNaN(growth)) {
         return "";
     }
 
-    if(isNaN(growth_year_before)) {
+    if(isNaN(growth_before)) {
         return {
             average: growth,
             max: growth,
@@ -412,9 +415,9 @@ function calcGrowthRevenue(growth_year_before, growth) {
     }
 
     return {
-        average: (growth_year_before + growth)/2,
-        max: Math.max(growth_year_before , growth),
-        min: Math.min(growth_year_before , growth)
+        average: (growth_before + growth)/2,
+        max: Math.max(growth_before , growth),
+        min: Math.min(growth_before , growth)
 
     };
 }

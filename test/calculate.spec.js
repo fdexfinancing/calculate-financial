@@ -1,4 +1,4 @@
-const {calculateDREBalance, calculateIndicators, calculateBalanceAndIndicators, calculateTheoryRating} = require('../index');
+const {calculateDREBalance, calculateIndicators, calculateBalanceAndIndicators, calculateTheoreticRating} = require('../index');
 
 const {balanceData} = require('./fixture');
 
@@ -30,8 +30,11 @@ test('should return expected schema', () => {
 
 test('should return correct value to growth', () => {
     const res = calculateDREBalance({
-        net_income_year_before: 88670000,
-        net_income: 54650123
+        net_income_before: 88670000,
+        net_income: 54650123,
+        month_quantity: 12,
+        month_quantity_before: 12,
+        month_quantity_before_before: 12
     }, {});
 
     expect(parseInt(res.growth)).toEqual(-38);

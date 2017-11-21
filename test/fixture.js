@@ -1,6 +1,6 @@
 const balanceData = {
     gross_revenue: 70855981,
-    net_income_year_before: 88670000,
+    net_income_before: 88670000,
     net_income: 54650123,
     sold_product_cost: 49450123,
     adm_cost: 5977920,
@@ -13,9 +13,9 @@ const balanceData = {
     exp_ir_csll: 0,
     current_assets: 20724088,
     cash_availability: 1739910,
-    customer_receive_year_before: 13740000,
+    customer_receive_before: 13740000,
     customer_receive: 4368477,
-    stock_year_before: 11752000,
+    stock_before: 11752000,
     stock: 6602469,
     no_current_assets: 49986018,
     taxes_cp_before: 3637000,
@@ -37,6 +37,8 @@ const balanceData = {
     cdi: 12.13,
     target_term: 12,
     month_quantity: 12,
+    month_quantity_before: 12,
+    month_quantity_before_before: 12,
     dollar_revenue: "",
     serasa: "",
     refin: ""
