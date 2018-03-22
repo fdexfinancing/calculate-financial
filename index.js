@@ -211,7 +211,7 @@ function calculateIndicators(data = {}, options) {
     result.current_ratio = calcCurrentRatio(data.current_assets, data.liabilities_cp);
     result.quick_ratio = calcQuickRatio(data.current_assets, data.stock, data.additional_leverage_total, data.liabilities_lp);
     result.debt_ratio = calcDebitRatio(data.current_assets, data.no_current_assets, data.liabilities_cp, data.liabilities_lp);
-    result.interest_coverage = calcInterestCoverage(data._ebitda, data.financial_result, data.financial_debits);
+    result.interest_coverage = calcInterestCoverage(data._ebitda, data.financial_result, data.financial_debits, data.month_quantity);
     result.interest_coveraty_minus_working_capital = calcInterestCoveratyMinusWorkingCapital(data._ebitda, data.financial_result, data.financial_debits, data.k_variation);
     result.usd_income = !isNaN(parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue)) ? parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue) : "";
     result.default_ninetydays_by_equity = calcDefaultNinetydaysEquity(data.liquid_assets, data.serasa, data.refin);
@@ -353,8 +353,10 @@ function calcDebitRatio(current_assets, no_current_assets, liabilities_cp, liabi
     return "";
 }
 
-function calcInterestCoverage(ebitda, financial_result, financial_debits) {
-    const financial = (parseFloat(financial_result) + parseFloat(financial_debits)) * -1;
+function calcInterestCoverage(ebitda, financial_result, financial_debits, month_quantity) {
+    month_quantity = month_quantity || 12;
+
+    const financial = (((parseFloat(financial_result)/month_quantity) * 12)  + parseFloat(financial_debits)) * -1;
 
     if(ebitda <= 0) {
         return 0;
@@ -365,7 +367,7 @@ function calcInterestCoverage(ebitda, financial_result, financial_debits) {
     }
 
     if(financial != 0) {
-        return ebitda/financial;
+        return ((ebitda/month_quantity) * 12)/financial;
     }
 
     return "";

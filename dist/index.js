@@ -247,7 +247,7 @@ function calculateIndicators() {
     result.net_debt_plus_taxes_by_ebitda = calcNetDebitTaxesEbitda(data.liquid_debit_with_liability, data.additional_leverage_total, result.ebitda);
     result.net_debt_by_ebitda_interest = calcNetDebitEbitdaInterest(data.liquid_debit, data.additional_leverage_total, data.financial_result, data.financial_debits, data._ebitda, data.month_quantity);
     result.gross_debt_by_monthly_revenue = calcGrossDebtMonthlyRevenue(data.onerous_liability_cp, data.onerous_liability_lp, data.additional_leverage_total, data.gross_revenue, data.month_quantity);
-    result.current_debt_by_monthly_revenue = calcCurrentDebtMonthlyRevenue(data.onerous_liability_cp, data.additional_leverage_total, data.gross_revenue, data.month_quantity);
+    result.current_debt_by_monthly_revenue = calcCurrentDebtMonthlyRevenue(data.onerous_liability_cp, data.additional_leverage_cp, data.gross_revenue, data.month_quantity);
     result.current_ratio = calcCurrentRatio(data.current_assets, data.liabilities_cp);
     result.quick_ratio = calcQuickRatio(data.current_assets, data.stock, data.additional_leverage_total, data.liabilities_lp);
     result.debt_ratio = calcDebitRatio(data.current_assets, data.no_current_assets, data.liabilities_cp, data.liabilities_lp);
