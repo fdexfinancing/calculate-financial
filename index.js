@@ -48,12 +48,15 @@ function calculateDREBalance(data = {}, options) {
     result.total_revenue = data.gross_revenue || 0;
     result.total_debit = calcTotalDebit(data.onerous_liability_cp, data.onerous_liability_lp);
 
+    result.ebit_margin = calcEbitMargin(data.op_result, data.net_income)
     result.operational_margin = calcOperationalMargin(result.operational_result, data.net_income);
     result.ebitda_margin = calcEbitdaMargin(result._ebitda, data.net_income);
     result.liquid_debt_by_monthly_income = calcLiquidDebtByMonthlyRevenue(result.liquid_debit, data.gross_revenue, data.month_quantity);
     result.liquid_debt_by_ebitda = calcLiquidDebtByEbitda(result.liquid_debit, result._ebitda, data.month_quantity);
     result.coverage = calcCoverage(result._ebitda, data.financial_result);
     result.liquid_debit_and_interest_by_ebitda = calcLiquidDebtAndTaxesByEbitda(result.liquid_debit, result.total_tax_liability, result._ebitda, data.month_quantity);
+    result.liquid_debit_by_ebit = calcLiquidDebtByEbit(data.bank_debit, data.cash_availability, data.op_result, data.month_quantity);
+    result.liquid_margin = calcLiquidMargin(data.net_profit, data.net_income);
 
     return result;
 }
@@ -550,6 +553,34 @@ function calcLiquidDebtAndTaxesByEbitda(liquid_debt, tax_liability, ebitda, mont
     return (parseFloat(liquid_debt)+ parseFloat(tax_liability)) / ((parseFloat(ebitda)/ parseFloat(month_amount)) * 12);
 }
 
+function calcEbitMargin(operational_result, net_income) {
+    if (!operational_result || !net_income)
+        return 0;
+
+    return ((operational_result/net_income) - 1) * 100;
+}
+
+function calcLiquidDebtByEbit(bank_debit, cash_availability, op_result, month_quantity) {
+    bank_debit = parseFloat(bank_debit)
+    cash_availability = parseFloat(cash_availability)
+    op_result = parseFloat(op_result)
+    month_quantity = parseFloat(month_quantity)
+
+    if (!op_result || !month_quantity)
+        return 0;
+
+    return ((bank_debit - cash_availability)/(op_result * (12/month_quantity)));
+}
+
+function calcLiquidMargin(net_profit, net_income) {
+    net_profit = parseFloat(net_profit)
+    net_income = parseFloat(net_income)
+    
+    if (!net_profit || !net_income)
+        return 0;
+
+    return ((net_profit/net_income) - 1) * 100;
+}
 
 
 window.module = window.module || {};
