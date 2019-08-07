@@ -56,12 +56,15 @@ function calculateDREBalance() {
     result.total_revenue = data.gross_revenue || 0;
     result.total_debit = calcTotalDebit(data.onerous_liability_cp, data.onerous_liability_lp);
 
+    result.ebit_margin = calcEbitMargin(data.op_result, data.net_income);
     result.operational_margin = calcOperationalMargin(result.operational_result, data.net_income);
     result.ebitda_margin = calcEbitdaMargin(result._ebitda, data.net_income);
     result.liquid_debt_by_monthly_income = calcLiquidDebtByMonthlyRevenue(result.liquid_debit, data.gross_revenue, data.month_quantity);
     result.liquid_debt_by_ebitda = calcLiquidDebtByEbitda(result.liquid_debit, result._ebitda, data.month_quantity);
     result.coverage = calcCoverage(result._ebitda, data.financial_result);
     result.liquid_debit_and_interest_by_ebitda = calcLiquidDebtAndTaxesByEbitda(result.liquid_debit, result.total_tax_liability, result._ebitda, data.month_quantity);
+    result.liquid_debit_by_ebit = calcLiquidDebtByEbit(data.bank_debit, data.cash_availability, data.op_result, data.month_quantity);
+    result.liquid_margin = calcLiquidMargin(data.net_profit, data.net_income);
 
     return result;
 }
@@ -251,7 +254,7 @@ function calculateIndicators() {
     result.current_ratio = calcCurrentRatio(data.current_assets, data.liabilities_cp);
     result.quick_ratio = calcQuickRatio(data.current_assets, data.stock, data.additional_leverage_total, data.liabilities_lp);
     result.debt_ratio = calcDebitRatio(data.current_assets, data.no_current_assets, data.liabilities_cp, data.liabilities_lp);
-    result.interest_coverage = calcInterestCoverage(data._ebitda, data.financial_result, data.financial_debits);
+    result.interest_coverage = calcInterestCoverage(data._ebitda, data.financial_result, data.financial_debits, data.month_quantity);
     result.interest_coveraty_minus_working_capital = calcInterestCoveratyMinusWorkingCapital(data._ebitda, data.financial_result, data.financial_debits, data.k_variation);
     result.usd_income = !isNaN(parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue)) ? parseFloat(data.dollar_revenue) / parseFloat(data.gross_revenue) : "";
     result.default_ninetydays_by_equity = calcDefaultNinetydaysEquity(data.liquid_assets, data.serasa, data.refin);
@@ -397,8 +400,10 @@ function calcDebitRatio(current_assets, no_current_assets, liabilities_cp, liabi
     return "";
 }
 
-function calcInterestCoverage(ebitda, financial_result, financial_debits) {
-    var financial = (parseFloat(financial_result) + parseFloat(financial_debits)) * -1;
+function calcInterestCoverage(ebitda, financial_result, financial_debits, month_quantity) {
+    month_quantity = month_quantity || 12;
+
+    var financial = (parseFloat(financial_result) / month_quantity * 12 + parseFloat(financial_debits)) * -1;
 
     if (ebitda <= 0) {
         return 0;
@@ -409,7 +414,7 @@ function calcInterestCoverage(ebitda, financial_result, financial_debits) {
     }
 
     if (financial != 0) {
-        return ebitda / financial;
+        return ebitda / month_quantity * 12 / financial;
     }
 
     return "";
@@ -591,6 +596,32 @@ function calcCoverage(ebitda, financial_result) {
 
 function calcLiquidDebtAndTaxesByEbitda(liquid_debt, tax_liability, ebitda, month_amount) {
     return (parseFloat(liquid_debt) + parseFloat(tax_liability)) / (parseFloat(ebitda) / parseFloat(month_amount) * 12);
+}
+
+function calcEbitMargin(operational_result, net_income) {
+    if (!operational_result || !net_income) return 0;
+
+    return (operational_result / net_income - 1) * 100;
+}
+
+function calcLiquidDebtByEbit(bank_debit, cash_availability, op_result, month_quantity) {
+    bank_debit = parseFloat(bank_debit);
+    cash_availability = parseFloat(cash_availability);
+    op_result = parseFloat(op_result);
+    month_quantity = parseFloat(month_quantity);
+
+    if (!op_result || !month_quantity) return 0;
+
+    return (bank_debit - cash_availability) / (op_result * (12 / month_quantity));
+}
+
+function calcLiquidMargin(net_profit, net_income) {
+    net_profit = parseFloat(net_profit);
+    net_income = parseFloat(net_income);
+
+    if (!net_profit || !net_income) return 0;
+
+    return (net_profit / net_income - 1) * 100;
 }
 
 window.module = window.module || {};
